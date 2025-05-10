@@ -1,0 +1,214 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Enhanced TO-DO List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      padding: 50px 15px;
+    }
+
+    .todo-container {
+      background: white;
+      padding: 20px 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .input-section {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex-grow: 1;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 15px;
+      background-color: #28a745;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .clear-btn {
+      background-color: #dc3545;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .clear-btn:hover {
+      background-color: #c82333;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      padding: 10px;
+      background: #f9f9f9;
+      margin-bottom: 8px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    li.completed {
+      text-decoration: line-through;
+      color: gray;
+    }
+
+    .task-text {
+      flex-grow: 1;
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    @media (max-width: 500px) {
+      .todo-container {
+        padding: 15px;
+      }
+
+      .input-section {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="todo-container">
+    <h1>📝 TO-DO List</h1>
+    <div class="input-section">
+      <input type="text" id="taskInput" placeholder="Add a new task..." />
+      <button onclick="addTask()">➕</button>
+    </div>
+    <ul id="taskList"></ul>
+    <button class="clear-btn" onclick="clearTasks()">🗑️ Clear All</button>
+  </div>
+
+  <script>
+    let tasks = [];
+
+    function loadTasks() {
+      const saved = localStorage.getItem('tasks');
+      if (saved) {
+        tasks = JSON.parse(saved);
+        tasks.forEach(task => renderTask(task));
+      }
+    }
+
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function renderTask(task) {
+      const li = document.createElement("li");
+      if (task.completed) li.classList.add("completed");
+
+      const span = document.createElement("span");
+      span.className = "task-text";
+      span.textContent = task.text;
+      span.onclick = () => {
+        task.completed = !task.completed;
+        saveTasks();
+        li.classList.toggle("completed");
+      };
+
+      span.ondblclick = () => {
+        const newText = prompt("Edit task:", task.text);
+        if (newText) {
+          task.text = newText.trim();
+          span.textContent = task.text;
+          saveTasks();
+        }
+      };
+
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "❌";
+      delBtn.onclick = (e) => {
+        e.stopPropagation();
+        li.remove();
+        tasks = tasks.filter(t => t !== task);
+        saveTasks();
+      };
+
+      actions.appendChild(delBtn);
+
+      li.appendChild(span);
+      li.appendChild(actions);
+
+      document.getElementById("taskList").appendChild(li);
+    }
+
+    function addTask() {
+      const input = document.getElementById("taskInput");
+      const text = input.value.trim();
+      if (text === "") {
+        alert("Please enter a task!");
+        return;
+      }
+      const newTask = { text, completed: false };
+      tasks.push(newTask);
+      renderTask(newTask);
+      saveTasks();
+      input.value = "";
+    }
+
+    function clearTasks() {
+      if (confirm("Are you sure you want to clear all tasks?")) {
+        tasks = [];
+        document.getElementById("taskList").innerHTML = "";
+        saveTasks();
+      }
+    }
+
+    loadTasks();
+  </script>
+</body>
+</html>
